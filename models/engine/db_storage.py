@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+"""modules to manaage the file storage"""
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from os import getenv
@@ -67,4 +69,10 @@ class DBStorage:
              self.__session.delete(obj)
 
     def reload(self):
+        """reload method"""
+        Base.metadata.create_all.(self.__engine)
+        Session = scoped_sessiona(
+                sessionmaker(bind=self.__engine, expire_on_commit=False)
+                )
+        self.__session = Session()
 

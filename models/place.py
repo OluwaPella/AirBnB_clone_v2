@@ -10,6 +10,28 @@ from os import getenv
 
 storage_type = getenv("HBNB_TYPE_STORAGE")
 
+
+place_amenity = Table(
+    "place_amenity",
+    Base.metadata,
+    Column(
+        "place_id",
+        String(60),
+        ForeignKey("places.id"),
+        primary_key=True,
+        nullable=False,
+    ),
+    Column(
+        "amenity_id",
+        String(60),
+        ForeignKey("amenities.id"),
+        primary_key=True,
+        nullable=False,
+    ),
+)
+
+
+
 class Place(BaseModel, Base):
     """ A place to stay """
     __tablename__ = 'places'
@@ -25,6 +47,10 @@ class Place(BaseModel, Base):
         latitude = Column(Float, nullable=True)
         longitude = Column(Float, nullable=True)
         reviews = relationship('Review', cascade="all,delete", backref="place")
+        amenities = relationship("Amenity", secondary=place_amenity,
+                                viewonly=False,
+                                back_populates="place_amenities")
+
 
     else:
 
@@ -40,6 +66,19 @@ class Place(BaseModel, Base):
     longitude = 0.0
     amenity_ids = []
 
+    @property
+    def amenities(self):
+        """Getter docuemnt"""
+        from models import storage
+        amenitiesList = []
+        amenitiesAll = storage.all(Amenity)
+        for amenity in amenitiesAll.values():
+            if amenity.id in self.amenity_ids:
+                amenitiesList.append(amenity)
+        return amenitiesList
+
+    
+    @property
     def reviews(self):
         """getter document"""
         for models import storage
@@ -49,3 +88,9 @@ class Place(BaseModel, Base):
             if reviews.place_id == self.id:
                 reviewsList.append(review)
         return reviewsList
+
+    @amenities.setter
+    def amenities(self, amenity):
+        """Setter document"""
+        if isinstance(amenity, Amenity):
+            self.amenity_ids.append(amenity.id)
